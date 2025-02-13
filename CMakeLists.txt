@@ -7,8 +7,9 @@ endif()
 
 project(OpenNMTTokenizer)
 
-option(BUILD_TESTS "Compile unit tests" OFF)
-option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(ONMT_BUILD_TESTS "Compile unit tests" OFF)
+option(ONMT_BUILD_SHARED_LIBS "Build shared libraries" ON)
+option(ONMT_LIB_ONLY "Build libraries only" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
@@ -39,16 +40,16 @@ set_target_properties(
   )
 
 if(MSVC)
-  if(NOT BUILD_SHARED_LIBS)
+  if(NOT ONMT_BUILD_SHARED_LIBS)
     if(CMAKE_VERSION VERSION_LESS "3.15.0")
-      message(FATAL_ERROR "Use CMake 3.15 or later when setting BUILD_SHARED_LIBS to OFF")
+      message(FATAL_ERROR "Use CMake 3.15 or later when setting ONMT_BUILD_SHARED_LIBS to OFF")
     endif()
     set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4 /wd4251 /d2FH4-")
   set(ICU_COMPONENTS uc dt)
 else()
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -fPIC")
   set(ICU_COMPONENTS uc data)
 endif()
 
@@ -115,11 +116,11 @@ generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/on
 target_include_directories(${PROJECT_NAME} ${INCLUDE_DIRECTORIES})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
 
-if (NOT LIB_ONLY)
+if (NOT ONMT_LIB_ONLY)
   add_subdirectory(cli)
 endif()
 
-if (BUILD_TESTS)
+if (ONMT_BUILD_TESTS)
   add_subdirectory(test)
 endif()
 

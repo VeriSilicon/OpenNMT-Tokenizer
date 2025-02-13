@@ -26,6 +26,19 @@ namespace onmt
     return dropout;
   }
 
+  BPE::BPE(const float dropout)
+    : _end_of_word("</w>")
+    , _begin_of_word("<w>")
+    , _prefix(false)
+    , _suffix(true)
+    , _case_insensitive(false)
+    , _version(0, 0)
+    , _dropout(check_dropout(dropout))
+  {
+    // For backward compatibility, assume the tokenization uses joiner annotation.
+    _tokenization_options.joiner_annotate = true;
+    _tokenization_options.joiner = Tokenizer::joiner_marker;
+  }
 
   BPE::BPE(const std::string& model_path, const float dropout)
     : _end_of_word("</w>")
@@ -128,6 +141,21 @@ namespace onmt
                                std::make_pair(std::move(first_token), std::move(second_token)));
       }
     }
+  }
+  //load model from each merge rule. need call mutiple times.
+  void BPE::add_merge_rule(const std::string& line)
+  {
+      size_t sep = line.find(' ');
+      if (sep != std::string::npos && sep + 1 < line.size())
+      {
+        std::string first_token = line.substr(0, sep);
+        std::string second_token = line.substr(sep + 1);
+        std::string pair = first_token + second_token;
+        if (_codes.count(pair) == 0)
+          _codes.emplace(pair, _codes.size());
+        _codes_reverse.emplace(std::move(pair),
+                               std::make_pair(std::move(first_token), std::move(second_token)));
+      }
   }
 
   std::vector<std::string> BPE::get_initial_pieces(const std::vector<unicode::CharInfo>& chars,

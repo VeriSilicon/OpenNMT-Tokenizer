@@ -17,6 +17,7 @@ namespace onmt
   public:
     BPE(const std::string& model_path, const float dropout = 0);
     BPE(const std::string& model_path, const std::string& joiner, const float dropout = 0);
+    BPE(const float dropout = 0);
 
     std::vector<std::string> encode(const std::string& str, bool training = true) const override;
     std::vector<Token> encode_and_annotate(const Token& token, bool training = true) const override;
@@ -37,6 +38,7 @@ namespace onmt
 
     static std::vector<std::string> get_initial_pieces(const std::vector<unicode::CharInfo>& chars,
                                                        const bool lowercase = false);
+    void add_merge_rule(const std::string& merge_rule);
 
   private:
     std::string _end_of_word;
