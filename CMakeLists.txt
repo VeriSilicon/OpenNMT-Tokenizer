@@ -10,6 +10,7 @@ project(OpenNMTTokenizer)
 option(ONMT_BUILD_TESTS "Compile unit tests" OFF)
 option(ONMT_BUILD_SHARED_LIBS "Build shared libraries" ON)
 option(ONMT_LIB_ONLY "Build libraries only" OFF)
+option(ACUITY_LLM_BUILD_ICU "build icu" OFF)
 
 set(CMAKE_CXX_STANDARD 11)
 if(CMAKE_VERSION VERSION_LESS "3.7.0")
@@ -54,7 +55,11 @@ else()
 endif()
 
 if(NOT DEFINED ICU_INCLUDE_DIRS OR NOT DEFINED ICU_LIBRARIES)
-  find_package(ICU REQUIRED COMPONENTS ${ICU_COMPONENTS})
+  if(NOT ACUITY_LLM_BUILD_ICU)
+    find_package(ICU REQUIRED COMPONENTS ${ICU_COMPONENTS})
+  else()
+    find_package(ICU REQUIRED COMPONENTS ${ICU_COMPONENTS} PATHS "${ICU_CMAKE_PATH}")
+  endif()
 endif()
 
 set(INCLUDE_DIRECTORIES
@@ -115,6 +120,10 @@ string(TOLOWER ${PROJECT_NAME} PROJECT_NAME_LOWER)
 generate_export_header(${PROJECT_NAME} EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/onmt/${PROJECT_NAME_LOWER}_export.h)
 target_include_directories(${PROJECT_NAME} ${INCLUDE_DIRECTORIES})
 target_link_libraries(${PROJECT_NAME} ${LINK_LIBRARIES})
+
+if(ACUITY_LLM_BUILD_ICU)
+  add_dependencies(${PROJECT_NAME} ICU)
+endif()
 
 if (NOT ONMT_LIB_ONLY)
   add_subdirectory(cli)
